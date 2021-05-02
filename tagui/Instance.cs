@@ -243,6 +243,18 @@ namespace tagui
             }
             return this;
         }
+        public Instance MouseX(out int X)
+        {
+            WaitIsReady();
+            X = int.Parse(Dump("mouse_x()"));
+            return this;
+        }
+        public Instance MouseY(out int Y)
+        {
+            WaitIsReady();
+            Y = int.Parse(Dump("mouse_y()"));
+            return this;
+        }
         public Instance Popup(string Element)
         {
             WaitIsReady();
@@ -282,14 +294,22 @@ namespace tagui
         public string Read(string Element)
         {
             WaitIsReady();
-            Send("read " + Element + " to readtaguisharp");
-            return Dump("readtaguisharp");
+            Send("read " + Element + " to q");
+            return Dump("q");
         }
         public string Read(int X, int Y, int Width, int Height)
         {
             WaitIsReady();
             Send(string.Format("read ({0},{1})-({2},{3}) to taguisharp", X, Y, X + Width, Y + Height));
             return Dump("taguisharp");
+        }
+        public string URL()
+        {
+            return Dump("url()");
+        }
+        public string Clipboard()
+        {
+            return Dump("clipboard()");
         }
         public Instance Snap(string Element, string Filename)
         {
@@ -335,10 +355,10 @@ namespace tagui
             isReady = true;
         }
         private string outbuffer = "";
-        public void Send(string command)
+        public void Send(string command, bool nooutput = false)
         {
             tagui.StandardInput.WriteLine(command);
-            onOutput?.Invoke(this, new OutputEventArgs(command));
+            if (!nooutput) onOutput?.Invoke(this, new OutputEventArgs(command));
         }
         private void Tagui_Exited(object sender, EventArgs e)
         {
@@ -354,7 +374,7 @@ namespace tagui
         private void Tagui_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
             outbuffer += e.Data;
-            if (string.IsNullOrEmpty(e.Data) || e.Data == Environment.NewLine) return;
+            // if (string.IsNullOrEmpty(e.Data) || e.Data == Environment.NewLine) return;
             onOutput?.Invoke(this, new OutputEventArgs(e.Data));
         }
         public void Dispose()

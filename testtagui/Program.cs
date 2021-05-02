@@ -72,15 +72,13 @@ namespace testtagui
                 {
                     Console.WriteLine("type openrpa and new line");
                     Console.WriteLine(instance.Type("q", "OpenIAP rocks").Wait(1).Read("q"));
-                    instance.Echo("`readtaguisharp`");
-
-                    instance.Type("q", " [clear]cute kitten[enter]");
+                    instance.Echo("`dummyvar`");
                 }
                 string s = "dummy";
                 while (s != "q" && s != "done")
                 {
                     s = Console.ReadLine();
-                    instance.Send(s);
+                    instance.Send(s, true);
                 }
             }
 
