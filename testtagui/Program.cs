@@ -13,6 +13,7 @@ namespace testtagui
             // ***** TEST WITHOUT BROWSER
             //using (var instance = tagui.Instance.Create(nobrowser: true, quiet: true))
             //{
+            //    instance.EchoSendCommand = true;
             //    instance.onOutput += Instance_onOutput;
             //    if (instance.Mouse(out int x, out int y) != null)
             //    {
@@ -33,12 +34,13 @@ namespace testtagui
             // ***** BROWSER TEST
             //using (var instance = tagui.Instance.Create(quiet: true))
             //{
+            //    instance.EchoSendCommand = true;
             //    instance.onOutput += Instance_onOutput;
             //    Console.WriteLine("open google.com and search for q");
             //    if (instance.Web("https://www.google.dk/imghp?hl=en&ogbl").Present("q"))
             //    {
             //        Console.WriteLine("type openrpa and new line");
-            //        Console.WriteLine(instance.Type("q", "OpenIAP rocks").Wait(1).Read("q"));
+            //        Console.WriteLine(instance.Type("q", "OpenIAP rocks").Wait(1).Read("//*[@name=\"q\"]"));
             //        instance.Echo("`readtaguisharp`");
 
             //        instance.Type("q", " [clear]cute kitten[enter]");
@@ -53,11 +55,13 @@ namespace testtagui
             // ***** TABLE TEST 
             //using (var instance = tagui.Instance.Create(quiet: true))
             //{
+            //    instance.EchoSendCommand = true;
             //    instance.onOutput += Instance_onOutput;
             //    Console.WriteLine(instance.Web("https://faculty.etsu.edu/tarnoff/ntes1710/tables/tables.htm").WaitFor("//table").Table("//table"));
             //}
             //using (var instance = tagui.Instance.Create(quiet: true))
             //{
+            //    instance.EchoSendCommand = true;
             //    instance.onOutput += Instance_onOutput;
 
             //    Console.WriteLine(instance.API("https://api.chucknorris.io/jokes/random"));
@@ -66,19 +70,20 @@ namespace testtagui
             Console.WriteLine("completed");
             using (var instance = tagui.Instance.Create())
             {
+                instance.EchoSendCommand = true;
                 instance.onOutput += Instance_onOutput;
                 Console.WriteLine("open google.com and search for q");
                 if (instance.Web("https://www.google.dk/imghp?hl=en&ogbl").Present("q"))
                 {
-                    Console.WriteLine("type openrpa and new line");
-                    Console.WriteLine(instance.Type("q", "OpenIAP rocks").Wait(1).Read("q"));
+                    Console.WriteLine(instance.Type("q", "OpenIAP rocks").Wait(1).Read("//*[@name=\"q\"]"));
                     instance.Echo("`dummyvar`");
                 }
+                instance.EchoSendCommand = false;
                 string s = "dummy";
                 while (s != "q" && s != "done")
                 {
                     s = Console.ReadLine();
-                    instance.Send(s, true);
+                    instance.Send(s);
                 }
             }
 

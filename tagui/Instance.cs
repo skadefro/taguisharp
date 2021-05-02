@@ -294,8 +294,8 @@ namespace tagui
         public string Read(string Element)
         {
             WaitIsReady();
-            Send("read " + Element + " to q");
-            return Dump("q");
+            Send("read " + Element + " to dummyvar");
+            return Dump("dummyvar");
         }
         public string Read(int X, int Y, int Width, int Height)
         {
@@ -355,10 +355,10 @@ namespace tagui
             isReady = true;
         }
         private string outbuffer = "";
-        public void Send(string command, bool nooutput = false)
+        public void Send(string command)
         {
             tagui.StandardInput.WriteLine(command);
-            if (!nooutput) onOutput?.Invoke(this, new OutputEventArgs(command));
+            if (EchoSendCommand) onOutput?.Invoke(this, new OutputEventArgs(command));
         }
         private void Tagui_Exited(object sender, EventArgs e)
         {
@@ -371,10 +371,12 @@ namespace tagui
             {
             }
         }
+        public bool OutputSkipBlank { get; set; } = true;
+        public bool EchoSendCommand { get; set; } = false;
         private void Tagui_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
             outbuffer += e.Data;
-            // if (string.IsNullOrEmpty(e.Data) || e.Data == Environment.NewLine) return;
+            if (OutputSkipBlank && (string.IsNullOrEmpty(e.Data) || e.Data == Environment.NewLine)) return;
             onOutput?.Invoke(this, new OutputEventArgs(e.Data));
         }
         public void Dispose()
