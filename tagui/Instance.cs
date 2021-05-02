@@ -111,40 +111,190 @@ namespace tagui
             tagui.Start();
             tagui.BeginOutputReadLine();
         }
-        public Instance OpenURL(string URL)
+        public Instance Web(string URL)
         {
             WaitIsReady();
-            tagui.StandardInput.WriteLine(URL);
+            Send(URL);
             return Noop();
         }
-        public Instance Click(string element)
+        public Instance Click(string Element)
         {
             WaitIsReady();
-            tagui.StandardInput.WriteLine("click " + element);
+            Send("click " + Element);
             return Noop();
         }
-        public bool Exist(string element)
+        public Instance Click(int X, int Y)
         {
             WaitIsReady();
-            if (string.IsNullOrEmpty(Dump("present(\"" + element + "\""))) return false;
-            return true;
+            Send("click (" + X + "," + Y + ")");
+            return Noop();
+        }
+        public Instance RightClick(string Element)
+        {
+            WaitIsReady();
+            Send("rclick " + Element);
+            return Noop();
+        }
+        public Instance RightClick(int X, int Y)
+        {
+            WaitIsReady();
+            Send("rclick (" + X + "," + Y + ")");
+            return Noop();
+        }
+        public Instance DoubleClick(string Element)
+        {
+            WaitIsReady();
+            Send("dclick " + Element);
+            return Noop();
+        }
+        public Instance DoubleClick(int X, int Y)
+        {
+            WaitIsReady();
+            Send("dclick (" + X + "," + Y + ")");
+            return Noop();
+        }
+        public Instance Hover(string Element)
+        {
+            WaitIsReady();
+            Send("hover " + Element);
+            return Noop();
+        }
+        public Instance Hover(int X, int Y)
+        {
+            WaitIsReady();
+            Send("hover (" + X + "," + Y + ")");
+            return Noop();
         }
         public Instance Type(string Element, string Input)
         {
             WaitIsReady();
-            tagui.StandardInput.WriteLine("type " + Element + " as " + Input);
+            Send("type " + Element + " as " + Input);
             return Noop();
         }
-        public bool Present(string element)
+        public Instance Type(string Element, int X, int Y)
         {
             WaitIsReady();
-            if (string.IsNullOrEmpty(Dump("present('" + element.Replace("'", "\"") + "')"))) return false;
+            Send("type " + Element + " as (" + X + "," + Y + ")");
+            return Noop();
+        }
+        public Instance Keyboard(string Input)
+        {
+            WaitIsReady();
+            Send("keyboard " + Input);
+            return Noop();
+        }
+        public Instance MouseDown()
+        {
+            WaitIsReady();
+            Send("mouse down");
+            return Noop();
+        }
+        public Instance MouseUp()
+        {
+            WaitIsReady();
+            Send("mouse up");
+            return Noop();
+        }
+        public Instance Select(string Element, string OptionValue)
+        {
+            WaitIsReady();
+            Send("select " + Element + " as " + OptionValue);
+            return Noop();
+        }
+        public string Table(string XPath, string csvfilename = "sharprpa.csv")
+        {
+            if (System.IO.File.Exists(csvfilename)) System.IO.File.Delete(csvfilename);
+            Send("table " + XPath + " to " + csvfilename);
+            Noop();
+            if (System.IO.File.Exists(csvfilename))
+            {
+                // Should we delete ? should we delete if NOT sharprpa.csv ? add an option ?
+                return System.IO.File.ReadAllText("sharprpa.csv");
+            }
+            return null;
+        }
+        public Instance WaitFor(string Element)
+        {
+            WaitIsReady();
+            if (Exist(Element)) return this;
+            throw new Exception("Failed locating " + Element);
+        }
+        public bool Exist(string Element)
+        {
+            WaitIsReady();
+            if (string.IsNullOrEmpty(Dump("exist(\"" + Element + "\")"))) return false;
             return true;
+        }
+        public bool Present(string Element)
+        {
+            WaitIsReady();
+            if (string.IsNullOrEmpty(Dump("present('" + Element.Replace("'", "\"") + "')"))) return false;
+            return true;
+        }
+        public Instance Mouse(out int X, out int Y)
+        {
+            WaitIsReady();
+            X = -1; Y = -1;
+            var result = Dump("mouse_xy()");
+            if (result.Contains(","))
+            {
+                X = int.Parse(result.Replace("(", "").Split(',')[0]);
+                Y = int.Parse(result.Replace(")", "").Split(',')[1]);
+            }
+            return this;
+        }
+        public Instance Popup(string Element)
+        {
+            WaitIsReady();
+            Send("popup " + Element);
+            return Noop();
+        }
+        public Instance Frame(string Element)
+        {
+            WaitIsReady();
+            Send("frame " + Element);
+            return Noop();
+        }
+        public Instance Download(string URL, string Filename)
+        {
+            WaitIsReady();
+            Send("download " + URL + " to " + Filename);
+            return Noop();
+        }
+        public Instance Upload(string Element, string Filename)
+        {
+            WaitIsReady();
+            Send("upload " + Element + " to " + Filename);
+            return Noop();
+        }
+        public string API(string URL)
+        {
+            WaitIsReady();
+            Send("api " + URL);
+            return Dump("api_result");
+        }
+        public Instance Echo(string Expression)
+        {
+            WaitIsReady();
+            Send("echo " + Expression);
+            return Noop();
+        }
+        public string Read(string Element)
+        {
+            WaitIsReady();
+            Send("read " + Element + " to readtaguisharp");
+            return Dump("readtaguisharp");
+        }
+        public string Read(int X, int Y, int Width, int Height)
+        {
+            WaitIsReady();
+            Send(string.Format("read ({0},{1})-({2},{3}) to taguisharp", X, Y, X + Width, Y + Height));
+            return Dump("taguisharp");
         }
         public Instance Snap(string Element, string Filename)
         {
             WaitIsReady();
-            tagui.StandardInput.WriteLine("snap " + Element + " to " + Filename);
+            Send("snap " + Element + " to " + Filename);
             return Noop();
         }
         public string Dump(string command)
@@ -152,7 +302,7 @@ namespace tagui
             WaitIsReady();
             outbuffer = "";
             if (System.IO.File.Exists("rpa_csharp.txt")) System.IO.File.Delete("rpa_csharp.txt");
-            tagui.StandardInput.WriteLine("dump `" + command + "` to rpa_csharp.txt");
+            Send("dump `" + command + "` to rpa_csharp.txt");
             while (outbuffer.Length == 0 && !System.IO.File.Exists("rpa_csharp.txt")) System.Threading.Thread.Sleep(500);
             outbuffer = "";
             if (System.IO.File.Exists("rpa_csharp.txt"))
@@ -171,7 +321,7 @@ namespace tagui
         }
         public Instance Noop()
         {
-            tagui.StandardInput.WriteLine("dummyvar=\"OpenIAP\"");
+            Send("dummyvar=\"OpenIAP\"");
             Dump("dummyvar");
             outbuffer = "";
             return this;
@@ -185,6 +335,11 @@ namespace tagui
             isReady = true;
         }
         private string outbuffer = "";
+        public void Send(string command)
+        {
+            tagui.StandardInput.WriteLine(command);
+            onOutput?.Invoke(this, new OutputEventArgs(command));
+        }
         private void Tagui_Exited(object sender, EventArgs e)
         {
             isReady = false;
@@ -199,6 +354,7 @@ namespace tagui
         private void Tagui_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
             outbuffer += e.Data;
+            if (string.IsNullOrEmpty(e.Data) || e.Data == Environment.NewLine) return;
             onOutput?.Invoke(this, new OutputEventArgs(e.Data));
         }
         public void Dispose()
@@ -209,7 +365,7 @@ namespace tagui
                 {
                     if (!tagui.HasExited)
                     {
-                        tagui.StandardInput.WriteLine("done");
+                        Send("done");
                         tagui.WaitForExit(3000);
                         if (!tagui.HasExited) tagui.Kill();
                     }
