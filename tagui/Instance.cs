@@ -12,7 +12,7 @@ namespace tagui
         {
             var result = new Instance();
             result.EnsureTagUI();
-            result.end_processes();
+            end_processes(result);
             result.CreateProcess(headless, nobrowser, quiet, preservelogfiles);
             AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
             {
@@ -45,32 +45,55 @@ namespace tagui
                         client.DownloadFile(tagui_zip_url, tagui_zip_file);
                     }
                 System.IO.Compression.ZipFile.ExtractToDirectory(tagui_zip_file, home);
+#if !Windows
+                var tagerina = System.IO.Path.Combine(home, "tagui/src/erina");
+                var taguiexe = System.IO.Path.Combine(home, "tagui/src/tagui");
+                var taguiendexe = System.IO.Path.Combine(home, "tagui/src/tagui/src/end_processes");
+                var permissions = "755";
+                Task.Run(async () => {
+                    await CliWrap.Cli.Wrap("/bin/bash")
+                        .WithArguments(new[] { "-c", $"chmod {permissions} {tagerina}" })
+                        .ExecuteAsync();
+                })
+                Task.Run(async () => {
+                    await CliWrap.Cli.Wrap("/bin/bash")
+                        .WithArguments(new[] { "-c", $"chmod {permissions} {taguiexe}" })
+                        .ExecuteAsync();
+                })
+                Task.Run(async () => {
+                    await CliWrap.Cli.Wrap("/bin/bash")
+                        .WithArguments(new[] { "-c", $"chmod {permissions} {taguiendexe}" })
+                        .ExecuteAsync();
+                })
+#endif
             }
         }
-        public void end_processes()
+        public static void end_processes(Instance instance = null)
         {
-            isReady = false;
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+#if Windows
+            var end_processes_exec = System.IO.Path.Combine(home, "tagui/src/end_processes.cmd");
+#else
             var end_processes_exec = System.IO.Path.Combine(home, "tagui/src/end_processes");
-            if (tagui != null)
+#endif
+            if (instance != null && instance.tagui != null)
             {
                 try
                 {
-                    if (!tagui.HasExited) tagui.Kill();
+                    if (!instance.tagui.HasExited) instance.tagui.Kill();
                 }
                 catch (Exception)
                 {
                 }
-                tagui.Dispose();
-                tagui = null;
+                instance.tagui.Dispose();
+                instance.tagui = null;
             }
             var ps = new System.Diagnostics.Process();
             ps.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
             ps.StartInfo.CreateNoWindow = false;
-            ps.StartInfo.FileName = "cmd.exe";
-            ps.StartInfo.Arguments = "/c " + end_processes_exec;
+            ps.StartInfo.FileName = end_processes_exec;
             ps.StartInfo.UseShellExecute = false;
-            ps.OutputDataReceived += Tagui_OutputDataReceived;
+            if (instance != null) ps.OutputDataReceived += instance.Tagui_OutputDataReceived;
             ps.Start();
             ps.WaitForExit(10000);
         }
@@ -78,7 +101,11 @@ namespace tagui
         {
             isReady = false;
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+#if Windows
             var tagui_exec = System.IO.Path.Combine(home, "tagui/src/tagui.cmd");
+#else
+            var tagui_exec = System.IO.Path.Combine(home, "tagui/src/tagui");
+#endif
             System.IO.File.WriteAllText(System.IO.Path.Combine(home, "live.tag"), "live" + Environment.NewLine + "// mouse_xy^(^)"); // Start live mode
             if (preservelogfiles)
             {
@@ -100,10 +127,8 @@ namespace tagui
             if (headless) tagui.StartInfo.Arguments += " -headless";
             if (nobrowser) tagui.StartInfo.Arguments += " -nobrowser";
             if (quiet) tagui.StartInfo.Arguments += " -quiet";
-            //tagui.StartInfo.FileName = "cmd.exe";
-            //tagui.StartInfo.Arguments = "/c " + tagui_exec + " live";
             tagui.StartInfo.UseShellExecute = false;
-            tagui.StartInfo.WorkingDirectory = @"C:\openiap\tagui\testtagui\bin\Debug";
+            //tagui.StartInfo.WorkingDirectory = home; // No, we depend on the rpa_csharp.txt to be in "current" folder
             tagui.OutputDataReceived += Tagui_OutputDataReceived;
             tagui.ErrorDataReceived += Tagui_OutputDataReceived;
             tagui.Exited += Tagui_Exited;
