@@ -37,13 +37,11 @@ namespace testtagui
             //    instance.EchoSendCommand = true;
             //    instance.onOutput += Instance_onOutput;
             //    Console.WriteLine("open google.com and search for q");
-            //    if (instance.Web("https://www.google.dk/imghp?hl=en&ogbl").Present("q"))
+            //    if (instance.Web("https://www.google.com/imghp?hl=en&ogbl").Present("q"))
             //    {
             //        Console.WriteLine("type openrpa and new line");
             //        Console.WriteLine(instance.Type("q", "OpenIAP rocks").Wait(1).Read("//*[@name=\"q\"]"));
-            //        instance.Echo("`readtaguisharp`");
-
-            //        instance.Type("q", " [clear]cute kitten[enter]");
+            //        instance.Type("q", "[clear]cute kitten[enter]");
             //    }
             //    //Console.WriteLine("Search for first picture");
             //    //if (instance.Present("//div[@data-ri=\"0\"]"))
@@ -59,33 +57,38 @@ namespace testtagui
             //    instance.onOutput += Instance_onOutput;
             //    Console.WriteLine(instance.Web("https://faculty.etsu.edu/tarnoff/ntes1710/tables/tables.htm").WaitFor("//table").Table("//table"));
             //}
-            //using (var instance = tagui.Instance.Create(quiet: true))
-            //{
-            //    instance.EchoSendCommand = true;
-            //    instance.onOutput += Instance_onOutput;
 
-            //    Console.WriteLine(instance.API("https://api.chucknorris.io/jokes/random"));
-            //}
-
-            Console.WriteLine("completed");
-            using (var instance = tagui.Instance.Create())
+            using (var instance = tagui.Instance.Create(nobrowser: true, quiet: true))
             {
                 instance.EchoSendCommand = true;
                 instance.onOutput += Instance_onOutput;
-                Console.WriteLine("open google.com and search for q");
-                if (instance.Web("https://www.google.dk/imghp?hl=en&ogbl").Present("q"))
+
+                if (instance.Present("startmenu.png"))
                 {
-                    Console.WriteLine(instance.Type("q", "OpenIAP rocks").Wait(1).Read("//*[@name=\"q\"]"));
-                    instance.Echo("`dummyvar`");
+                    Console.WriteLine("Click Start menu");
+                    instance.Click("startmenu.png").Keyboard("calculator[enter]");
+
                 }
-                instance.EchoSendCommand = false;
-                string s = "dummy";
-                while (s != "q" && s != "done")
-                {
-                    s = Console.ReadLine();
-                    instance.Send(s);
-                }
+
+
+                Console.WriteLine(instance.API("https://api.chucknorris.io/jokes/random"));
             }
+
+
+
+            //Console.WriteLine("completed");
+            //Console.WriteLine("Free console type directly to live");
+            //using (var instance = tagui.Instance.Create())
+            //{
+            //    instance.onOutput += Instance_onOutput;
+            //    instance.Web("https://www.google.com");
+            //    string s = "dummy";
+            //    while (s != "q" && s != "done")
+            //    {
+            //        s = Console.ReadLine();
+            //        instance.Send(s);
+            //    }
+            //}
 
 
         }

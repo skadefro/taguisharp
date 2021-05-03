@@ -281,9 +281,10 @@ namespace tagui
         }
         public string API(string URL)
         {
-            WaitIsReady();
-            Send("api " + URL);
-            return Dump("api_result");
+            throw new NotSupportedException("API seem to not be supported in LIVE mode");
+            //WaitIsReady();
+            //Send("api " + URL);
+            //return Dump("api_result");
         }
         public Instance Echo(string Expression)
         {
@@ -302,6 +303,10 @@ namespace tagui
             WaitIsReady();
             Send(string.Format("read ({0},{1})-({2},{3}) to taguisharp", X, Y, X + Width, Y + Height));
             return Dump("taguisharp");
+        }
+        public bool Check(string Element)
+        {
+            throw new NotSupportedException("step not supported in live mode, there is no conditions language parser");
         }
         public string URL()
         {
